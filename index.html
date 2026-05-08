@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font: 'DM Sans', sans-serif;
+      --bg: #f8f7f4;
+      --surface: #ffffff;
+      --surface2: #f1f0ed;
+      --border: rgba(0,0,0,0.10);
+      --border-strong: rgba(0,0,0,0.20);
+      --text: #1a1a1a;
+      --text-2: #555;
+      --text-3: #999;
+      --blue: #185FA5;
+      --blue-bg: #e6f1fb;
+      --blue-text: #0c447c;
+      --green: #3B6D11;
+      --green-bg: #eaf3de;
+      --green-text: #3B6D11;
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      font-size: 14px;
+      color: var(--text-2);
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .section { margin-bottom: 1.75rem; }
+
+    /* Customer type toggle */
+    .ctype-row { display: flex; gap: 8px; }
+    .ctype-btn {
+      flex: 1;
+      padding: 11px 16px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text-2);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .ctype-btn:hover { background: var(--surface2); }
+    .ctype-btn.active {
+      background: var(--blue-bg);
+      border: 2px solid var(--blue);
+      color: var(--blue-text);
+    }
+
+    /* Pricing table */
+    .pricing-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); }
+    .pricing-table th { padding: 10px 16px; font-size: 12px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; text-align: center; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .pricing-table th:first-child { text-align: left; width: 110px; }
+    .pricing-table td { padding: 0; border-bottom: 1px solid var(--border); text-align: center; }
+    .pricing-table tr:last-child td { border-bottom: none; }
+    .pricing-table td:first-child { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-2); text-align: left; background: var(--surface2); border-right: 1px solid var(--border); }
+    .plan-cell { display: block; width: 100%; padding: 12px 16px; cursor: pointer; font-size: 13px; color: var(--text-2); transition: background 0.12s; text-align: center; }
+    .plan-cell:hover { background: var(--blue-bg); color: var(--blue-text); }
+    .plan-cell.selected { background: var(--blue-bg); color: var(--blue-text); font-weight: 600; position: relative; }
+    .plan-cell.selected::after { content: '✓'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--blue); }
+    .plan-cell-price { font-size: 13px; font-weight: 600; display: block; }
+    .plan-cell-pervin { font-size: 11px; color: var(--text-3); display: block; margin-top: 1px; }
+    .plan-cell.selected .plan-cell-pervin { color: var(--blue-text); opacity: 0.7; }
+    .col-divider { border-left: 1px solid var(--border); }
+
+    /* VIN & Plan card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.125rem 1.25rem;
+    }
+
+    .vin-pills { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px; }
+    .vin-pill {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-family: var(--font);
+      font-weight: 500;
+      border: 1px solid var(--border-strong);
+      cursor: pointer;
+      background: var(--surface2);
+      color: var(--text-2);
+      transition: all 0.12s;
+    }
+    .vin-pill:hover { border-color: var(--blue); color: var(--blue-text); }
+    .vin-pill.active {
+      background: var(--blue-bg);
+      border: 2px solid var(--blue);
+      color: var(--blue-text);
+    }
+
+    .plan-row { display: flex; gap: 1.5rem; padding-top: 10px; border-top: 1px solid var(--border); }
+    .plan-radio { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+    .plan-radio input { cursor: pointer; accent-color: var(--blue); }
+    .plan-label-right { margin-left: auto; font-size: 12px; color: var(--text-3); }
+
+    /* Feature cards */
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 10px;
+      transition: border 0.15s;
+    }
+    .feature-card.included { background: var(--green-bg); border-color: rgba(59,109,17,0.25); }
+    .feature-card.active-feature { border: 2px solid var(--blue); }
+
+    .feature-header { display: flex; align-items: center; justify-content: space-between; }
+    .feature-name { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; }
+    .feature-right { display: flex; align-items: center; gap: 12px; }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .badge-included { background: var(--green-bg); color: var(--green-text); border: 1px solid rgba(59,109,17,0.3); }
+    .badge-addon { background: var(--blue-bg); color: var(--blue-text); border: 1px solid rgba(24,95,165,0.3); }
+
+    .price-chip { font-size: 14px; font-weight: 600; color: var(--blue-text); min-width: 70px; text-align: right; }
+    .price-chip.muted { color: var(--text-3); }
+
+    /* Toggle switch */
+    .toggle-wrap { position: relative; width: 40px; height: 22px; cursor: pointer; flex-shrink: 0; }
+    .toggle-wrap input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      border-radius: 20px;
+      background: #d0d0d0;
+      transition: background 0.2s;
+    }
+    .toggle-wrap input:checked + .toggle-track { background: var(--blue); }
+    .toggle-thumb {
+      position: absolute;
+      left: 3px; top: 3px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle-wrap input:checked + .toggle-track .toggle-thumb { transform: translateX(18px); }
+    .toggle-wrap input:disabled + .toggle-track { opacity: 0.5; cursor: not-allowed; }
+
+    .sub-features { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .sub-features.show { display: block; }
+    .sub-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
+    .sub-name { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+
+    /* Summary */
+    .summary-card {
+      background: var(--surface2);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-bottom: 12px;
+    }
+    .summary-title { font-size: 12px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 14px; color: var(--text-2); }
+    .summary-total {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 20px; font-weight: 600; color: var(--text);
+      border-top: 1px solid var(--border-strong); margin-top: 10px; padding-top: 12px;
+    }
+    .pervin-note { font-size: 12px; color: var(--text-3); margin-top: 6px; text-align: right; }
+
+
+
+
+
+    @media (max-width: 480px) {
+      body { padding: 1rem 0.75rem; }
+      .page-header h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="page-header">
+    <h1>Pricing Calculator</h1>
+    <p>Configure your plan and see real-time cost breakdown with AI-powered insights.</p>
+  </div>
+
+  <!-- Step 1: Customer Type -->
+  <div class="section">
+    <div class="step-label">Step 1 — Customer type</div>
+    <div class="ctype-row">
+      <button class="ctype-btn active" id="btn-new" onclick="setType('new')">
+        <i class="ti ti-user-plus"></i> New Customer
+      </button>
+      <button class="ctype-btn" id="btn-existing" onclick="setType('existing')">
+        <i class="ti ti-users"></i> Existing Customer
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 2: VINs + Plan -->
+  <div class="section">
+    <div class="step-label">Step 2 — Select Max VINs &amp; plan</div>
+    <table class="pricing-table" id="vin-plan-table">
+      <thead>
+        <tr>
+          <th>Max VINs</th>
+          <th colspan="2">Studio Lite</th>
+          <th colspan="2" class="col-divider">Studio Pro</th>
+        </tr>
+        <tr>
+          <th></th>
+          <th style="font-size:11px;font-weight:500">Price / Rooftop</th>
+          <th style="font-size:11px;font-weight:500">Price / VIN</th>
+          <th style="font-size:11px;font-weight:500" class="col-divider">Price / Rooftop</th>
+          <th style="font-size:11px;font-weight:500">Price / VIN</th>
+        </tr>
+      </thead>
+      <tbody id="vin-table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Step 3: Features -->
+  <div class="section">
+    <div class="step-label">Step 3 — Features</div>
+
+    <!-- Base Plan -->
+    <div class="feature-card included">
+      <div class="feature-header">
+        <div class="feature-name">
+          <i class="ti ti-layout-grid" style="font-size:18px;color:var(--green-text)"></i>
+          Base Plan
+          <span class="badge badge-included">Always included</span>
+        </div>
+        <div class="price-chip" id="base-price">$199</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:4px" id="base-pervin">$3.98 per VIN</div>
+    </div>
+
+    <!-- SmartMatch -->
+    <div class="feature-card active-feature" id="fc-sm">
+      <div class="feature-header">
+        <div class="feature-name">
+          <i class="ti ti-brain" style="font-size:18px;color:var(--blue)"></i>
+          SmartMatch
+          <span class="badge badge-included" id="sm-badge">Included</span>
+        </div>
+        <div class="feature-right">
+          <div class="price-chip" id="sm-price">$198</div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="sm-toggle" checked onchange="toggleFeature('sm')" disabled />
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+      </div>
+      <div class="sub-features show" id="sm-sub">
+        <div class="sub-row">
+          <label class="sub-name" id="smn-label" style="cursor:pointer;user-select:none">
+            <input type="checkbox" id="smn-toggle" checked onchange="toggleSubFeature('smn')" disabled style="accent-color:var(--blue);cursor:pointer" />
+            <i class="ti ti-car" style="font-size:15px"></i> New cars (SmartMatch New)
+          </label>
+          <div class="price-chip" id="smn-price">$99</div>
+        </div>
+        <div class="sub-row">
+          <label class="sub-name" id="smo-label" style="cursor:pointer;user-select:none">
+            <input type="checkbox" id="smo-toggle" checked onchange="toggleSubFeature('smo')" disabled style="accent-color:var(--blue);cursor:pointer" />
+            <i class="ti ti-car-off" style="font-size:15px"></i> Old cars (SmartMatch Old)
+          </label>
+          <div class="price-chip" id="smo-price">$99</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SmartCampaigns -->
+    <div class="feature-card" id="fc-sc">
+      <div class="feature-header">
+        <div class="feature-name">
+          <i class="ti ti-speakerphone" style="font-size:18px;color:var(--text-3)"></i>
+          SmartCampaigns
+          <span class="badge badge-addon">Add-on</span>
+        </div>
+        <div class="feature-right">
+          <div class="price-chip muted" id="sc-price">$0</div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="sc-toggle" onchange="toggleFeature('sc')" />
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="section">
+    <div class="summary-card">
+      <div class="summary-title">Cost breakdown</div>
+      <div class="summary-row"><span>Base plan</span><span id="sum-base">$199</span></div>
+      <div class="summary-row" id="sum-sm-row"><span id="sum-sm-label">SmartMatch (New + Old)</span><span id="sum-sm">$198</span></div>
+      <div class="summary-row" id="sum-sc-row" style="display:none"><span>SmartCampaigns</span><span id="sum-sc">—</span></div>
+      <div class="summary-total"><span>Monthly total</span><span id="sum-total">$397</span></div>
+      <div class="pervin-note" id="sum-pervin">Blended: $7.94 per VIN</div>
+    </div>
+
+
+  </div>
+</div>
+
+<script>
+const PRICING = {
+  base: { lite:{50:199,100:349,200:599,300:749,400:799}, pro:{50:499,100:849,200:1499,300:1899,400:1999} },
+  smNew: { lite:{50:99,100:199,200:249,300:249,400:249}, pro:{50:99,100:199,200:249,300:249,400:249} },
+  smOld: { lite:{50:99,100:199,200:249,300:249,400:249}, pro:{50:99,100:199,200:249,300:249,400:249} },
+  sc: { lite:{50:125,100:225,200:400,300:524,400:599}, pro:{50:125,100:225,200:400,300:524,400:599} }
+};
+const PER_VIN = {
+  base: { lite:{50:3.98,100:3.49,200:3.00,300:2.50,400:2.00}, pro:{50:9.98,100:8.49,200:7.50,300:6.33,400:5.00} },
+  smNew: { lite:{50:1.98,100:1.99,200:1.25,300:0.83,400:0.62}, pro:{50:1.98,100:1.99,200:1.25,300:0.83,400:0.62} },
+  smOld: { lite:{50:1.98,100:1.99,200:1.25,300:0.83,400:0.62}, pro:{50:1.98,100:1.99,200:1.25,300:0.83,400:0.62} },
+  sc: { lite:{50:2.50,100:2.25,200:2.00,300:1.75,400:1.50}, pro:{50:2.50,100:2.25,200:2.00,300:1.75,400:1.50} }
+};
+
+let state = { type:'new', vins:50, plan:'lite', sm:true, sc:false, smn:true, smo:true };
+
+function init() {
+  buildTable();
+  render();
+}
+
+function setType(t) {
+  state.type = t;
+  document.getElementById('btn-new').classList.toggle('active', t==='new');
+  document.getElementById('btn-existing').classList.toggle('active', t==='existing');
+  const toggle = document.getElementById('sm-toggle');
+  const badge = document.getElementById('sm-badge');
+  const fc = document.getElementById('fc-sm');
+  if (t === 'new') {
+    state.sm = true; state.smn = true; state.smo = true;
+    toggle.checked = true;
+    toggle.disabled = true;
+    badge.textContent = 'Included';
+    badge.className = 'badge badge-included';
+    fc.className = 'feature-card active-feature';
+    // lock sub-checkboxes for new customers — both always included
+    document.getElementById('smn-toggle').checked = true;
+    document.getElementById('smn-toggle').disabled = true;
+    document.getElementById('smo-toggle').checked = true;
+    document.getElementById('smo-toggle').disabled = true;
+  } else {
+    toggle.disabled = false;
+    badge.textContent = 'Add-on';
+    badge.className = 'badge badge-addon';
+    fc.className = state.sm ? 'feature-card active-feature' : 'feature-card';
+    // enable sub-checkboxes for existing customers
+    document.getElementById('smn-toggle').disabled = false;
+    document.getElementById('smo-toggle').disabled = false;
+  }
+  render();
+}
+
+function buildTable() {
+  const vins = [50,100,200,300,400];
+  const tbody = document.getElementById('vin-table-body');
+  tbody.innerHTML = '';
+  vins.forEach(v => {
+    const tr = document.createElement('tr');
+    const liteSelected = state.vins===v&&state.plan==='lite';
+    const proSelected  = state.vins===v&&state.plan==='pro';
+    const selClass = (b) => b ? ' selected' : '';
+    tr.innerHTML = `<td>${v}</td>
+      <td><span class="plan-cell${selClass(liteSelected)}" onclick="selectCell(${v},'lite')">
+        <span class="plan-cell-price">$${PRICING.base.lite[v]}</span>
+      </span></td>
+      <td><span class="plan-cell${selClass(liteSelected)}" onclick="selectCell(${v},'lite')">
+        <span class="plan-cell-price">$${PER_VIN.base.lite[v].toFixed(2)}</span>
+      </span></td>
+      <td class="col-divider"><span class="plan-cell${selClass(proSelected)}" onclick="selectCell(${v},'pro')">
+        <span class="plan-cell-price">$${PRICING.base.pro[v]}</span>
+      </span></td>
+      <td><span class="plan-cell${selClass(proSelected)}" onclick="selectCell(${v},'pro')">
+        <span class="plan-cell-price">$${PER_VIN.base.pro[v].toFixed(2)}</span>
+      </span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function selectCell(v, p) {
+  state.vins = v;
+  state.plan = p;
+  buildTable();
+  render();
+}
+
+function toggleSubFeature(f) {
+  if (f==='smn') state.smn = document.getElementById('smn-toggle').checked;
+  if (f==='smo') state.smo = document.getElementById('smo-toggle').checked;
+  // if at least one sub is on, keep SmartMatch parent on
+  if (!state.smn && !state.smo) {
+    state.sm = false;
+    document.getElementById('sm-toggle').checked = false;
+    document.getElementById('fc-sm').className = 'feature-card';
+    document.getElementById('sm-sub').className = 'sub-features';
+  }
+  render();
+}
+
+function toggleFeature(f) {
+  if (f==='sm') {
+    state.sm = document.getElementById('sm-toggle').checked;
+    if (state.sm) { state.smn = true; state.smo = true; document.getElementById('smn-toggle').checked = true; document.getElementById('smo-toggle').checked = true; }
+    document.getElementById('sm-sub').className = state.sm ? 'sub-features show' : 'sub-features';
+    document.getElementById('fc-sm').className = state.sm ? 'feature-card active-feature' : 'feature-card';
+  }
+  if (f==='sc') {
+    state.sc = document.getElementById('sc-toggle').checked;
+    document.getElementById('fc-sc').className = state.sc ? 'feature-card active-feature' : 'feature-card';
+  }
+  render();
+}
+
+function fmt(n) { return '$' + n.toLocaleString('en-US'); }
+
+function render() {
+  const v = state.vins, p = state.plan;
+  const bp = PRICING.base[p][v];
+  const snp = PRICING.smNew[p][v];
+  const sop = PRICING.smOld[p][v];
+  const scp = PRICING.sc[p][v];
+  const bpv = PER_VIN.base[p][v];
+
+  document.getElementById('base-price').textContent = fmt(bp);
+  document.getElementById('base-pervin').textContent = '$'+bpv.toFixed(2)+' per VIN';
+
+  const smnTotal = (state.sm && state.smn) ? snp : 0;
+  const smoTotal = (state.sm && state.smo) ? sop : 0;
+  const smTotal = smnTotal + smoTotal;
+  document.getElementById('sm-price').textContent = smTotal > 0 ? fmt(smTotal) : '$0';
+  document.getElementById('smn-price').textContent = (state.sm && state.smn) ? fmt(snp) : '—';
+  document.getElementById('smo-price').textContent = (state.sm && state.smo) ? fmt(sop) : '—';
+
+  // dim price chip if sub not selected
+  document.getElementById('smn-price').className = (state.sm && state.smn) ? 'price-chip' : 'price-chip muted';
+  document.getElementById('smo-price').className = (state.sm && state.smo) ? 'price-chip' : 'price-chip muted';
+
+  const scTotal = state.sc ? scp : 0;
+  const scEl = document.getElementById('sc-price');
+  scEl.textContent = state.sc ? fmt(scp) : '$0';
+  scEl.className = state.sc ? 'price-chip' : 'price-chip muted';
+
+  const total = bp + smTotal + scTotal;
+  const blended = (total / v).toFixed(2);
+
+  document.getElementById('sum-base').textContent = fmt(bp);
+  const smLabel = state.smn && state.smo ? 'SmartMatch (New + Old)' : state.smn ? 'SmartMatch (New cars)' : 'SmartMatch (Old cars)';
+  document.getElementById('sum-sm-row').style.display = smTotal > 0 ? '' : 'none';
+  document.getElementById('sum-sm-label').textContent = smLabel;
+  document.getElementById('sum-sm').textContent = fmt(smTotal);
+  document.getElementById('sum-sc-row').style.display = state.sc ? '' : 'none';
+  document.getElementById('sum-sc').textContent = fmt(scp);
+  document.getElementById('sum-total').textContent = fmt(total);
+  document.getElementById('sum-pervin').textContent = `Blended: $${blended} per VIN`;
+}
+
+init();
+</script>
+</body>
+</html>
