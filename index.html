@@ -204,6 +204,24 @@
     .sub-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
     .sub-name { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
 
+    /* SmartMatch expandable pricing tables */
+    .sm-tables-wrap { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .sm-tables-wrap.open { display: block; }
+    .sm-table-section { margin-bottom: 14px; }
+    .sm-table-section:last-child { margin-bottom: 0; }
+    .sm-table-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .sm-mini-table { width: 100%; border-collapse: collapse; font-size: 12px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .sm-mini-table th { padding: 6px 10px; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; text-align: center; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .sm-mini-table th:first-child { text-align: left; width: 80px; }
+    .sm-mini-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text-2); font-size: 12px; }
+    .sm-mini-table tr:last-child td { border-bottom: none; }
+    .sm-mini-table td:first-child { text-align: left; font-weight: 600; background: var(--surface2); border-right: 1px solid var(--border); }
+    .sm-mini-table td.active-col { background: var(--blue-bg); color: var(--blue-text); font-weight: 600; }
+    .sm-mini-table .col-sep { border-left: 1px solid var(--border); }
+    .dbl-hint { font-size: 11px; color: var(--text-3); display: flex; align-items: center; gap: 4px; cursor: default; }
+    .expand-chevron { font-size: 13px; transition: transform 0.2s; color: var(--text-3); }
+    .expand-chevron.open { transform: rotate(180deg); }
+
     /* Summary */
     .summary-card {
       background: var(--surface2);
@@ -291,15 +309,16 @@
 
     <!-- SmartMatch -->
     <div class="feature-card active-feature" id="fc-sm">
-      <div class="feature-header">
+      <div class="feature-header" onclick="toggleSmTables()" style="cursor:pointer" title="Click to view pricing tables">
         <div class="feature-name">
           <i class="ti ti-brain" style="font-size:18px;color:var(--blue)"></i>
           SmartMatch
           <span class="badge badge-included" id="sm-badge">Included</span>
+          <i class="ti ti-chevron-down expand-chevron" id="sm-chevron"></i>
         </div>
         <div class="feature-right">
           <div class="price-chip" id="sm-price">$198</div>
-          <label class="toggle-wrap">
+          <label class="toggle-wrap" onclick="event.stopPropagation()">
             <input type="checkbox" id="sm-toggle" checked onchange="toggleFeature('sm')" disabled />
             <div class="toggle-track"><div class="toggle-thumb"></div></div>
           </label>
@@ -321,22 +340,40 @@
           <div class="price-chip" id="smo-price">$99</div>
         </div>
       </div>
+      <div class="sm-tables-wrap" id="sm-tables">
+        <div class="dbl-hint" style="margin-bottom:10px"><i class="ti ti-table" style="font-size:14px"></i> All-tier pricing</div>
+        <div class="sm-table-section">
+          <div class="sm-table-label">SmartMatch — New cars</div>
+          <table class="sm-mini-table" id="sm-new-table"></table>
+        </div>
+        <div class="sm-table-section">
+          <div class="sm-table-label">SmartMatch — Old cars</div>
+          <table class="sm-mini-table" id="sm-old-table"></table>
+        </div>
+      </div>
     </div>
 
     <!-- SmartCampaigns -->
     <div class="feature-card" id="fc-sc">
-      <div class="feature-header">
+      <div class="feature-header" onclick="toggleScTable()" style="cursor:pointer" title="Click to view pricing table">
         <div class="feature-name">
           <i class="ti ti-speakerphone" style="font-size:18px;color:var(--text-3)"></i>
           SmartCampaigns
           <span class="badge badge-addon">Add-on</span>
+          <i class="ti ti-chevron-down expand-chevron" id="sc-chevron"></i>
         </div>
         <div class="feature-right">
           <div class="price-chip muted" id="sc-price">$0</div>
-          <label class="toggle-wrap">
+          <label class="toggle-wrap" onclick="event.stopPropagation()">
             <input type="checkbox" id="sc-toggle" onchange="toggleFeature('sc')" />
             <div class="toggle-track"><div class="toggle-thumb"></div></div>
           </label>
+        </div>
+      </div>
+      <div class="sm-tables-wrap" id="sc-tables">
+        <div class="dbl-hint" style="margin-bottom:10px"><i class="ti ti-table" style="font-size:14px"></i> All-tier pricing</div>
+        <div class="sm-table-section">
+          <table class="sm-mini-table" id="sc-table"></table>
         </div>
       </div>
     </div>
@@ -362,13 +399,13 @@ const PRICING = {
   base: { lite:{50:199,100:349,200:599,300:749,400:799}, pro:{50:499,100:849,200:1499,300:1899,400:1999} },
   smNew: { lite:{50:99,100:199,200:249,300:249,400:249}, pro:{50:99,100:199,200:249,300:249,400:249} },
   smOld: { lite:{50:99,100:199,200:249,300:249,400:249}, pro:{50:99,100:199,200:249,300:249,400:249} },
-  sc: { lite:{50:125,100:225,200:400,300:524,400:599}, pro:{50:125,100:225,200:400,300:524,400:599} }
+  sc: { lite:{50:249,100:349,200:499,300:649,400:799}, pro:{50:249,100:349,200:499,300:649,400:799} }
 };
 const PER_VIN = {
   base: { lite:{50:3.98,100:3.49,200:3.00,300:2.50,400:2.00}, pro:{50:9.98,100:8.49,200:7.50,300:6.33,400:5.00} },
   smNew: { lite:{50:1.98,100:1.99,200:1.25,300:0.83,400:0.62}, pro:{50:1.98,100:1.99,200:1.25,300:0.83,400:0.62} },
   smOld: { lite:{50:1.98,100:1.99,200:1.25,300:0.83,400:0.62}, pro:{50:1.98,100:1.99,200:1.25,300:0.83,400:0.62} },
-  sc: { lite:{50:2.50,100:2.25,200:2.00,300:1.75,400:1.50}, pro:{50:2.50,100:2.25,200:2.00,300:1.75,400:1.50} }
+  sc: { lite:{50:4.98,100:3.49,200:2.50,300:2.16,400:2.00}, pro:{50:4.98,100:3.49,200:2.50,300:2.16,400:2.00} }
 };
 
 let state = { type:'new', vins:50, plan:'lite', sm:true, sc:false, smn:true, smo:true };
@@ -440,6 +477,56 @@ function selectCell(v, p) {
   state.plan = p;
   buildTable();
   render();
+}
+
+function buildSmTable(tableEl, key) {
+  const vins = [50,100,200,300,400];
+  const v = state.vins, p = state.plan;
+  let html = `<thead><tr>
+    <th>Max VINs</th>
+    <th>Lite — Rooftop</th><th>Lite — /VIN</th>
+    <th class="col-sep">Pro — Rooftop</th><th>Pro — /VIN</th>
+  </tr></thead><tbody>`;
+  vins.forEach(vin => {
+    const liteP = PRICING[key].lite[vin];
+    const litePV = PER_VIN[key].lite[vin];
+    const proP = PRICING[key].pro[vin];
+    const proPV = PER_VIN[key].pro[vin];
+    const isLite = vin===v && p==='lite';
+    const isPro  = vin===v && p==='pro';
+    html += `<tr>
+      <td>${vin}</td>
+      <td class="${isLite?'active-col':''}">$${liteP}</td>
+      <td class="${isLite?'active-col':''}">$${litePV.toFixed(2)}</td>
+      <td class="col-sep ${isPro?'active-col':''}">$${proP}</td>
+      <td class="${isPro?'active-col':''}">$${proPV.toFixed(2)}</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  tableEl.innerHTML = html;
+}
+
+function toggleSmTables() {
+  const wrap = document.getElementById('sm-tables');
+  const chevron = document.getElementById('sm-chevron');
+  const isOpen = wrap.classList.contains('open');
+  if (!isOpen) {
+    buildSmTable(document.getElementById('sm-new-table'), 'smNew');
+    buildSmTable(document.getElementById('sm-old-table'), 'smOld');
+  }
+  wrap.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
+}
+
+function toggleScTable() {
+  const wrap = document.getElementById('sc-tables');
+  const chevron = document.getElementById('sc-chevron');
+  const isOpen = wrap.classList.contains('open');
+  if (!isOpen) {
+    buildSmTable(document.getElementById('sc-table'), 'sc');
+  }
+  wrap.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
 }
 
 function toggleSubFeature(f) {
