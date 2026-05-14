@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spyne AI Roadmap</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+      color: #fff;
+      padding: 36px 48px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
+    .brand { display: flex; align-items: center; gap: 16px; }
+    .brand-logo {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: linear-gradient(135deg,#e94560,#0f3460);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px; letter-spacing: -1px;
+    }
+    .brand-text h1 { font-size: 22px; font-weight: 700; letter-spacing: .5px; }
+    .brand-text p  { font-size: 13px; opacity: .65; margin-top: 2px; }
+    .header-meta   { text-align: right; font-size: 13px; opacity: .7; line-height: 1.7; }
+
+    /* ── Summary bar ── */
+    .summary {
+      display: flex; gap: 16px; padding: 24px 48px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .stat-card {
+      flex: 1; padding: 18px 24px; border-radius: 12px;
+      display: flex; align-items: center; gap: 16px;
+      border: 1.5px solid transparent;
+    }
+    .stat-card.done   { background:#f0fdf4; border-color:#86efac; }
+    .stat-card.picked { background:#eff6ff; border-color:#93c5fd; }
+    .stat-card.later  { background:#fefce8; border-color:#fde68a; }
+    .stat-card.hold   { background:#faf5ff; border-color:#d8b4fe; }
+
+    .stat-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .done   .stat-icon { background:#dcfce7; }
+    .picked .stat-icon { background:#dbeafe; }
+    .later  .stat-icon { background:#fef9c3; }
+    .hold   .stat-icon { background:#f3e8ff; }
+
+    .stat-info h3  { font-size: 26px; font-weight: 800; line-height: 1; }
+    .done   .stat-info h3 { color:#16a34a; }
+    .picked .stat-info h3 { color:#2563eb; }
+    .later  .stat-info h3 { color:#b45309; }
+    .hold   .stat-info h3 { color:#7c3aed; }
+    .stat-info p  { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .7px; color:#64748b; margin-top:3px; }
+
+    /* ── Main grid ── */
+    .main { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 28px 48px 48px; }
+
+    .section-full { grid-column: 1 / -1; }
+
+    .section {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 18px 24px; display: flex; align-items: center; gap: 12px;
+    }
+    .done-header   { background: linear-gradient(90deg,#16a34a,#22c55e); color:#fff; }
+    .picked-header { background: linear-gradient(90deg,#1d4ed8,#3b82f6); color:#fff; }
+    .later-header  { background: linear-gradient(90deg,#92400e,#f59e0b); color:#fff; }
+    .hold-header   { background: linear-gradient(90deg,#5b21b6,#8b5cf6); color:#fff; }
+
+    .section-header h2 { font-size: 16px; font-weight: 700; letter-spacing: .3px; }
+    .section-header .badge {
+      margin-left: auto; background: rgba(255,255,255,.25);
+      border-radius: 20px; padding: 3px 12px;
+      font-size: 13px; font-weight: 700;
+    }
+    .section-header .emoji { font-size: 20px; }
+
+    /* ── Cards ── */
+    .cards { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+    .card {
+      border-radius: 10px; padding: 14px 16px;
+      border: 1px solid #e2e8f0;
+      transition: box-shadow .15s, transform .15s;
+      cursor: default;
+    }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); transform: translateY(-1px); }
+
+    .card-top { display: flex; align-items: flex-start; gap: 10px; }
+    .card-story { font-size: 14px; font-weight: 600; color: #1e293b; flex: 1; line-height: 1.45; }
+
+    .epic-tag {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; padding: 3px 8px; border-radius: 6px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .epic-360   { background:#dbeafe; color:#1d4ed8; }
+    .epic-img   { background:#fce7f3; color:#be185d; }
+    .epic-insp  { background:#dcfce7; color:#15803d; }
+    .epic-vid   { background:#fee2e2; color:#b91c1c; }
+    .epic-3d    { background:#f3e8ff; color:#6d28d9; }
+    .epic-edge  { background:#fef9c3; color:#92400e; }
+    .epic-imgx  { background:#e0f2fe; color:#0369a1; }
+
+    .card-meta {
+      display: flex; align-items: center; gap: 8px; margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .meta-chip {
+      font-size: 11px; padding: 2px 8px; border-radius: 6px;
+      font-weight: 500;
+    }
+    .chip-goal { background:#f1f5f9; color:#475569; }
+    .chip-dev  { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+    .chip-eta  { background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; }
+    .chip-prio { background:#f5f3ff; color:#5b21b6; border:1px solid #ddd6fe; }
+
+    .card-note {
+      margin-top: 8px; font-size: 11.5px; color:#64748b;
+      background:#f8fafc; border-left: 3px solid #cbd5e1;
+      padding: 6px 10px; border-radius: 0 6px 6px 0;
+      line-height: 1.4;
+    }
+    .done-card   { background:#fafffe; }
+    .picked-card { background:#fafbff; }
+    .later-card  { background:#fffdf5; }
+    .hold-card   { background:#fdf5ff; }
+
+    /* ── Progress bar ── */
+    .progress-wrap { padding: 0 24px 20px; }
+    .progress-label { font-size: 12px; color:#64748b; margin-bottom:6px; font-weight:500; }
+    .progress-bar { height: 8px; background:#e2e8f0; border-radius: 99px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+    .fill-done   { background: linear-gradient(90deg,#16a34a,#4ade80); }
+    .fill-picked { background: linear-gradient(90deg,#1d4ed8,#60a5fa); }
+    .fill-later  { background: linear-gradient(90deg,#92400e,#fbbf24); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center; padding: 20px;
+      font-size: 12px; color:#94a3b8;
+      border-top: 1px solid #e2e8f0; background:#fff;
+    }
+
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; padding: 16px; }
+      .section-full { grid-column: 1; }
+      header, .summary { padding: 20px; }
+      .summary { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="brand">
+    <div class="brand-logo">S</div>
+    <div class="brand-text">
+      <h1>Spyne AI Roadmap</h1>
+      <p>Executive Summary · May 2025</p>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div>Prepared for CEO Review</div>
+    <div>Last updated: 14 May 2025</div>
+  </div>
+</header>
+
+<!-- ── Summary bar ── -->
+<div class="summary">
+  <div class="stat-card done">
+    <div class="stat-icon">✅</div>
+    <div class="stat-info"><h3>11</h3><p>Done</p></div>
+  </div>
+  <div class="stat-card picked">
+    <div class="stat-icon">🚀</div>
+    <div class="stat-info"><h3>10</h3><p>In Progress</p></div>
+  </div>
+  <div class="stat-card later">
+    <div class="stat-icon">📋</div>
+    <div class="stat-info"><h3>13</h3><p>Later</p></div>
+  </div>
+  <div class="stat-card hold">
+    <div class="stat-icon">⏸</div>
+    <div class="stat-info"><h3>10</h3><p>On Hold</p></div>
+  </div>
+</div>
+
+<!-- ── Main content ── -->
+<div class="main">
+
+  <!-- ══ DONE ══ -->
+  <div class="section section-full">
+    <div class="section-header done-header">
+      <span class="emoji">✅</span>
+      <h2>Done — Shipped & Delivered</h2>
+      <span class="badge">11 items</span>
+    </div>
+    <div class="progress-wrap" style="padding-top:14px;">
+      <div class="progress-label">Overall completion across all tracked items (25 active)</div>
+      <div class="progress-bar"><div class="progress-fill fill-done" style="width:44%"></div></div>
+    </div>
+    <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;padding:0 16px 16px;">
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">360 Processing time reduction to under 10 mins</div>
+          <span class="epic-tag epic-360">360 Spin</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Reduce days to frontline</span>
+          <span class="meta-chip chip-dev">Turnul</span>
+          <span class="meta-chip chip-eta">28th Apr</span>
+        </div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">BG removal for all focus shoots + open doors + Trunk</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Reduce days to frontline</span>
+          <span class="meta-chip chip-dev">Yash</span>
+        </div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">4 to 36 — Replace 8 image 360 spin</div>
+          <span class="epic-tag epic-360">360 Spin</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Revenue growth Levers</span>
+          <span class="meta-chip chip-dev">Hetansh</span>
+          <span class="meta-chip chip-eta">7th Apr</span>
+        </div>
+        <div class="card-note">Dev pending</div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">360 from Broken Video</div>
+          <span class="epic-tag epic-360">360 Spin</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Revenue growth Levers</span>
+          <span class="meta-chip chip-dev">Hetansh</span>
+          <span class="meta-chip chip-eta">7th Apr</span>
+        </div>
+        <div class="card-note">Dev pending</div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">Background Generation from Image/Video/Panoramic — Phase 1 (Creative)</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Increase sales conversion</span>
+          <span class="meta-chip chip-dev">Utkarsh</span>
+          <span class="meta-chip chip-eta">7th Apr</span>
+        </div>
+        <div class="card-note">Done V1 · Store front to 360, some text might distort</div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">Segmentation</div>
+          <span class="epic-tag epic-insp">Inspection</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Revenue growth Levers</span>
+          <span class="meta-chip chip-dev">Yash</span>
+          <span class="meta-chip chip-eta">6th May</span>
+          <span class="meta-chip chip-prio">Priority 1</span>
+        </div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">Defect Classifier (Dent, Damage, Scratch)</div>
+          <span class="epic-tag epic-insp">Inspection</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Revenue growth Levers</span>
+          <span class="meta-chip chip-dev">Yash</span>
+          <span class="meta-chip chip-eta">6th May</span>
+          <span class="meta-chip chip-prio">Priority 1a</span>
+        </div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">Background Recommendation</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Increase sales conversion</span>
+          <span class="meta-chip chip-dev">Utkarsh</span>
+          <span class="meta-chip chip-eta">6th May</span>
+          <span class="meta-chip chip-prio">Priority 2</span>
+        </div>
+        <div class="card-note">Product Experience (OB handling)</div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">Exterior Auto QC</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Reduce days to frontline</span>
+          <span class="meta-chip chip-dev">Atharv</span>
+          <span class="meta-chip chip-eta">15th May</span>
+        </div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">Hotspot Accuracy Improvement</div>
+          <span class="epic-tag epic-vid">Video</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Reduce days to frontline</span>
+          <span class="meta-chip chip-dev">Yash</span>
+        </div>
+      </div>
+
+      <div class="card done-card">
+        <div class="card-top">
+          <div class="card-story">Service Separation — Images</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-dev">Tumul</span>
+          <span class="meta-chip chip-eta">DFD 3rd Apr</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ PICKED (IN PROGRESS) ══ -->
+  <div class="section">
+    <div class="section-header picked-header">
+      <span class="emoji">🚀</span>
+      <h2>Picked — In Progress</h2>
+      <span class="badge">10 items</span>
+    </div>
+    <div class="cards">
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">360 interior without Ricoh Theta</div>
+          <span class="epic-tag epic-360">360 Spin</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Revenue growth</span>
+          <span class="meta-chip chip-dev">Utkarsh</span>
+          <span class="meta-chip chip-eta">6th–20th May</span>
+          <span class="meta-chip chip-prio">P2</span>
+        </div>
+        <div class="card-note">Enhancements: Text & logo · Image refinements</div>
+      </div>
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">0.5x shoot to 1x background mapping</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Increase sales conversion</span>
+          <span class="meta-chip chip-dev">Utkarsh</span>
+          <span class="meta-chip chip-eta">19th May</span>
+          <span class="meta-chip chip-prio">P2</span>
+        </div>
+        <div class="card-note">Converted 1x BG · More samples 0.5x · Share samples</div>
+      </div>
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">Swiggy AI model improvements</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Accuracy Improvements</span>
+          <span class="meta-chip chip-dev">Shreyank</span>
+          <span class="meta-chip chip-eta">13th May</span>
+          <span class="meta-chip chip-prio">P3</span>
+        </div>
+        <div class="card-note">V1 version is done</div>
+      </div>
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">Reflection + Exposure + Light Correction (Studio lighting)</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Increase sales conversion</span>
+          <span class="meta-chip chip-dev">Shreyank</span>
+          <span class="meta-chip chip-eta">6th May</span>
+          <span class="meta-chip chip-prio">P3</span>
+        </div>
+        <div class="card-note">Current pipeline 15 sec/image. Need planning to deploy on 80GB instance.</div>
+      </div>
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">Interior + Interior focus shoot</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Accuracy Improvements</span>
+          <span class="meta-chip chip-dev">Yash</span>
+          <span class="meta-chip chip-eta">6th–11th May</span>
+          <span class="meta-chip chip-prio">P4</span>
+        </div>
+      </div>
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">Open Door, Trunk — Remove BG model improvement</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Accuracy Improvements</span>
+          <span class="meta-chip chip-dev">Yash</span>
+          <span class="meta-chip chip-eta">13th May</span>
+          <span class="meta-chip chip-prio">P5</span>
+        </div>
+      </div>
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">Trucks/VAN/Bike/Boat — Classifier, Angle detection, Remove BG</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Accuracy Improvements</span>
+          <span class="meta-chip chip-dev">Yash</span>
+          <span class="meta-chip chip-prio">P6 · Next</span>
+        </div>
+      </div>
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">Background Independent Warping (360 model accuracy)</div>
+          <span class="epic-tag epic-360">360 Spin</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Reduce days to frontline</span>
+          <span class="meta-chip chip-dev">Hetansh</span>
+          <span class="meta-chip chip-eta">11th May</span>
+          <span class="meta-chip chip-prio">P7</span>
+        </div>
+      </div>
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">360 Processing time reduction to under 6 mins</div>
+          <span class="epic-tag epic-360">360 Spin</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Reduce days to frontline</span>
+          <span class="meta-chip chip-dev">Tumul</span>
+          <span class="meta-chip chip-eta">8th May</span>
+        </div>
+        <div class="card-note">Trend of time reduction</div>
+      </div>
+
+      <div class="card picked-card">
+        <div class="card-top">
+          <div class="card-story">360 Processing time reduction to under 4 mins</div>
+          <span class="epic-tag epic-360">360 Spin</span>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip chip-goal">Reduce days to frontline</span>
+          <span class="meta-chip chip-dev">Tumul</span>
+          <span class="meta-chip chip-eta">13th May</span>
+        </div>
+        <div class="card-note">Along with cost optimization</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ LATER ══ -->
+  <div class="section">
+    <div class="section-header later-header">
+      <span class="emoji">📋</span>
+      <h2>Later — Backlog</h2>
+      <span class="badge">13 items</span>
+    </div>
+    <div class="cards">
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Processing time reduction to under 1 second</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-goal">Reduce days to frontline</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">BG removal for new vehicle types</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-goal">Reduce days to frontline</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">8 Frame extraction — front and back angles centering</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-goal">Reduce days to frontline</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Banner occlusion on car</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-goal">Reduce days to frontline</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Snow Removal</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-goal">Reduce days to frontline</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Background removal and 360 creation on app</div>
+          <span class="epic-tag epic-edge">On-Edge</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-goal">Reduce days to frontline</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Smart Banner creation with AI</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-goal">Increase sales conversion</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">360 Interior Remove 3G Model</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-goal">Accuracy Improvements</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Service Separation 360</div>
+          <span class="epic-tag epic-360">360</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-dev">Tumul</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Tilt correction in placement correction tool</div>
+          <span class="epic-tag epic-360">360</span>
+        </div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Placement logic improvement for 8 images to 360</div>
+          <span class="epic-tag epic-360">360</span>
+        </div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Marketing Images (Banner &amp; Billboard) classifier</div>
+          <span class="epic-tag epic-img">Images</span>
+        </div>
+        <div class="card-meta"><span class="meta-chip chip-goal">Accuracy Improvements</span></div>
+      </div>
+
+      <div class="card later-card">
+        <div class="card-top">
+          <div class="card-story">Exterior Remove Bg — 360 + Image</div>
+          <span class="epic-tag epic-imgx">Images + 360</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Spyne AI Roadmap &nbsp;·&nbsp; Confidential &nbsp;·&nbsp; May 2025
+</footer>
+
+</body>
+</html>
